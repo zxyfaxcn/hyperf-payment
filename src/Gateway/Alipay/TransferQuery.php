@@ -1,36 +1,47 @@
 <?php
 declare(strict_types = 1);
+
 namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\Payment\Contract\GatewayInterface;
+use Hyperf\Payment\Contract\QueryInterface;
 use Hyperf\Payment\Exception\GatewayException;
 use Hyperf\Payment\Helpers\Arr;
 use Hyperf\Payment\Payment;
 
 /**
- * 为方便商户快速查账，支持商户通过本接口获取商户离线账单下载地址
- * Class Bill
+ * 商户可通过该接口查询转账订单的状态、支付时间等相关信息，主要应用于B2C转账订单查询的场景
+ * Class TransferQuery
  * @package Hyperf\Payment\Gateway\Alipay
  */
-class Bill extends BaseAlipay implements GatewayInterface
+class TransferQuery extends BaseAlipay implements GatewayInterface
 {
-
-    const METHOD = 'alipay.data.dataservice.bill.downloadurl.query';
+    const METHOD = 'alipay.fund.trans.order.query';
 
     /**
-     * @inheritDoc
+     * @param array $options
+     *
+     * @return mixed
      */
-    protected function getBizContent(array $requestParams)
+    protected function getBizContent(array $options)
     {
         $bizContent = [
-            'bill_type' => $requestParams['bill_type'] ?? 'trade',
-            'bill_date' => $requestParams['bill_date'] ?? '', // 日账单格式为yyyy-MM-dd
+            'out_biz_no' => $options['trans_no'] ?? '',
+            'order_id'   => $options['transaction_id'] ?? '',
         ];
         $bizContent = Arr::paraFilter($bizContent);
 
         return $bizContent;
     }
 
+    /**
+     * 获取第三方返回结果
+     *
+     * @param array $options
+     *
+     * @return mixed
+     * @throws GatewayException
+     */
     public function request(array $options)
     {
         try {
@@ -38,10 +49,10 @@ class Bill extends BaseAlipay implements GatewayInterface
             $ret    = $this->get($this->gatewayUrl, $params);
             $retArr = json_decode($ret, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new GatewayException(sprintf('format bill data get error, [%s]', json_last_error_msg()), Payment::FORMAT_DATA_ERR, ['raw' => $ret]);
+                throw new GatewayException(sprintf('format transfer query data get error, [%s]', json_last_error_msg()), Payment::FORMAT_DATA_ERR, ['raw' => $ret]);
             }
 
-            $content = $retArr['alipay_data_dataservice_bill_downloadurl_query_response'];
+            $content = $retArr['alipay_fund_trans_order_query_response'];
             if ($content['code'] !== self::REQ_SUC) {
                 throw new GatewayException(sprintf('request get failed, msg[%s], sub_msg[%s]', $content['msg'], $content['sub_msg']), Payment::SIGN_ERR, $content);
             }

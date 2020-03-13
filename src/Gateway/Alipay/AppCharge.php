@@ -3,7 +3,6 @@ declare(strict_types = 1);
 namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\Payment\Contract\GatewayInterface;
-use Hyperf\Payment\Gateway\BaseAlipay;
 use Hyperf\Payment\Helpers\Arr;
 
 /**

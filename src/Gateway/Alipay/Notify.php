@@ -4,8 +4,8 @@ namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\Payment\Exception\GatewayException;
-use Hyperf\Payment\Gateway\BaseAlipay;
 use Hyperf\Payment\Payment;
+use Hyperf\Utils\Context;
 
 /**
  * Class Notify
@@ -78,12 +78,11 @@ class Notify extends BaseAlipay
     }
 
     /**
-     * @param \Hyperf\HttpServer\Contract\RequestInterface $request
-     *
      * @return array
      */
-    protected function getNotifyData(RequestInterface $request) : array
+    protected function getNotifyData() : array
     {
+        $request = Context::get(RequestInterface::class);
         $data = $request->all();
         if (empty($data) || !is_array($data)) {
             return [];

@@ -5,8 +5,10 @@ namespace Hyperf\Payment;
 use Hyperf\Payment\Adapter\AlipayFactory;
 use Hyperf\Payment\Adapter\WxpayFactory;
 use Hyperf\Payment\Contract\PayNotifyInterface;
+use Hyperf\Payment\Event\PaymentMeta;
 use Hyperf\Payment\Exception\ClassNotFoundException;
 use Hyperf\Payment\Exception\GatewayException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class ClientFactory
@@ -27,8 +29,6 @@ class ClientFactory
 {
     /*----------------支持的渠道-----------------*/
     const ALIPAY = 'Alipay'; // 支付宝
-
-    const CMB = 'CMBank';// 招商银行
 
     const WECHAT = 'Wechat';// 微信
 
@@ -65,9 +65,12 @@ class ClientFactory
      */
     protected $proxy;
 
-    public function __construct(string $proxy)
+    private $eventDispatcher;
+
+    public function __construct(string $proxy, EventDispatcherInterface $eventDispatcher)
     {
-        $this->proxy = $this->make($proxy);
+        $this->proxy           = $this->make($proxy);
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function __call($name, $arguments)
@@ -83,7 +86,9 @@ class ClientFactory
         }
 
         try {
-            return call_user_func_array([$this->proxy, $name], $arguments);
+            $resonpse = call_user_func_array([$this->proxy, $name], $arguments);
+            $this->eventDispatcher->dispatch(new PaymentMeta($this->proxy, $arguments, $resonpse));
+            return $resonpse;
         } catch (GatewayException $e) {
             throw $e;
         }

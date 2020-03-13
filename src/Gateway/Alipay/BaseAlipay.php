@@ -1,6 +1,6 @@
 <?php
 declare(strict_types = 1);
-namespace Hyperf\Payment\Gateway;
+namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Payment\Exception\GatewayException;
@@ -10,6 +10,7 @@ use Hyperf\Payment\Helper\Rsa2Encrypt;
 use Hyperf\Payment\Helpers\Arr;
 use Hyperf\Payment\HttpRequest;
 use Hyperf\Payment\Payment;
+use Hyperf\Utils\ApplicationContext;
 use Psr\Log\LoggerInterface;
 
 abstract class BaseAlipay
@@ -58,10 +59,10 @@ abstract class BaseAlipay
      */
     private $logger;
 
-    public function __construct(ConfigInterface $config, ?LoggerInterface $logger = null)
+    public function __construct()
     {
-        $this->config = $config;
-        $this->logger = $logger;
+        $this->config = ApplicationContext::getContainer()->get(ConfigInterface::class);
+        $this->logger = ApplicationContext::getContainer()->get(LoggerInterface::class);
         $this->initialize();
     }
 

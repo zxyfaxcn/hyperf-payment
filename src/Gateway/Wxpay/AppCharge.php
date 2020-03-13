@@ -73,7 +73,7 @@ class AppCharge extends BaseWxPay implements GatewayInterface
     public function request(array $options)
     {
         try {
-            return $this->requestWXApi(self::METHOD, $requestParams);
+            return $this->requestWXApi(self::METHOD, $options);
         } catch (GatewayException $e) {
             throw $e;
         }

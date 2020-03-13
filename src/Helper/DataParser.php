@@ -54,8 +54,6 @@ class DataParser
         //禁止引用外部xml实体
         libxml_disable_entity_loader(true);
 
-        $data = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
-
-        return $data;
+        return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
     }
 }

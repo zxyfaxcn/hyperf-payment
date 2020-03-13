@@ -7,20 +7,20 @@ use Hyperf\Payment\Contract\PayInterface;
 use Hyperf\Payment\Contract\PayNotifyInterface;
 use Hyperf\Payment\Contract\QueryInterface;
 use Hyperf\Payment\Exception\GatewayException;
+use Hyperf\Payment\Gateway\Alipay\Bill;
+use Hyperf\Payment\Gateway\Alipay\CancelTrade;
+use Hyperf\Payment\Gateway\Alipay\CloseTrade;
+use Hyperf\Payment\Gateway\Alipay\Notify;
+use Hyperf\Payment\Gateway\Alipay\Refund;
+use Hyperf\Payment\Gateway\Alipay\RefundQuery;
+use Hyperf\Payment\Gateway\Alipay\TradeQuery;
+use Hyperf\Payment\Gateway\Alipay\TransferQuery;
 use Hyperf\Payment\Payment;
 
-class AlipayFactory implements GatewayInterface, PayInterface, PayNotifyInterface, QueryInterface
+class AlipayFactory implements PayInterface, QueryInterface
 {
-
     /**
-     * @inheritDoc
-     */
-    public function request(array $options)
-    {
-
-    }
-
-    /**
+     * 支付操作
      * @inheritDoc
      */
     public function pay(string $channel, array $options)
@@ -42,51 +42,79 @@ class AlipayFactory implements GatewayInterface, PayInterface, PayNotifyInterfac
     }
 
     /**
+     * 退款操作
      * @inheritDoc
      */
     public function refund(array $options)
     {
-
+        try {
+            $obj = new Refund();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
+     * 同步异步通知
      * @inheritDoc
      */
     public function notify(PayNotifyInterface $callback)
     {
+        try {
+            $n    = new Notify();
+            $data = $n->request(); // 获取数据
+        } catch (GatewayException $e) {
+            throw $e;
+        }
 
+        // 异步 async，同步 sync
+        $flag = $callback->handle('Alipay', $data['notify_type'], $data['notify_way'], $data['notify_data']);
+
+        return $n->response($flag);
     }
 
     /**
+     * 取消交易
      * @inheritDoc
      */
     public function cancel(array $options)
     {
-
+        try {
+            $obj = new CancelTrade();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
+     * 关闭交易
      * @inheritDoc
      */
     public function close(array $options)
     {
-
+        try {
+            $obj = new CloseTrade();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function handle(string $channel, string $notifyType, string $notifyWay, array $notifyData)
-    {
-
-    }
 
     /**
+     * 交易查询
      * @inheritDoc
      */
     public function tradeQuery(array $options)
     {
-
+        try {
+            $obj = new TradeQuery();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -94,31 +122,49 @@ class AlipayFactory implements GatewayInterface, PayInterface, PayNotifyInterfac
      */
     public function refundQuery(array $options)
     {
-
+        try {
+            $obj = new RefundQuery();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
+     * 转账查询
      * @inheritDoc
      */
     public function transferQuery(array $options)
     {
-
+        try {
+            $obj = new TransferQuery();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
+     * 账单查询
      * @inheritDoc
      */
     public function billDownload(array $options)
     {
-
+        try {
+            $obj = new Bill();
+            return $obj->request($options);
+        } catch (GatewayException $e) {
+            throw $e;
+        }
     }
 
     /**
+     * 打款结算查询
      * @inheritDoc
      */
     public function settleDownload(array $options)
     {
-
+        throw new GatewayException('ali not support the method.', Payment::NOT_SUPPORT_METHOD);
     }
 
     /**
@@ -133,4 +179,5 @@ class AlipayFactory implements GatewayInterface, PayInterface, PayNotifyInterfac
         $name = ucfirst(str_replace(['-', '_', ''], '', $channel));
         return "Hyperf\\Payment\\Gateways\\Alipay\\{$name}Charge";
     }
+
 }
