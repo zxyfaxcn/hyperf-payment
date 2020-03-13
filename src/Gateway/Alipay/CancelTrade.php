@@ -9,13 +9,10 @@ Use Hyperf\Payment\Helpers\Arr;
 use Hyperf\Payment\Payment;
 
 /**
- * @package Payment\Gateways\Alipay
- * @author  : Leo
- * @email   : dayugog@gmail.com
- * @date    : 2019/3/31 9:13 AM
- * @version : 1.0.0
- * @desc    : 用于交易创建后，用户在一定时间内未进行支付，可调用该接口直接将未付款的交易进行关闭。
- **/
+ * 用于交易创建后，用户在一定时间内未进行支付，可调用该接口直接将未付款的交易进行关闭。
+ * Class CancelTrade
+ * @package Hyperf\Payment\Gateway\Alipay
+ */
 class CancelTrade extends BaseAlipay implements GatewayInterface
 {
     const METHOD = 'alipay.trade.cancel';
