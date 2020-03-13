@@ -1,17 +1,25 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
 
 namespace Hyperf\Payment\Helpers;
 
 class Arr
 {
     /**
-     * 移除空值的key
+     * 移除空值的key.
      *
      * @param $para
      *
      * @return array
-     * @author Leo
      */
     public static function paraFilter($para)
     {
@@ -20,7 +28,7 @@ class Arr
             if ($val === '' || $val === null) {
                 continue;
             }
-            if (!is_array($para[$key])) {
+            if (! is_array($para[$key])) {
                 $para[$key] = is_bool($para[$key]) ? $para[$key] : trim($para[$key]);
             }
 
@@ -33,18 +41,18 @@ class Arr
     /**
      * 删除一位数组中，指定的key与对应的值
      *
-     * @param array        $inputs 要操作的数组
-     * @param array|string $keys   需要删除的key的数组，或者用（,）链接的字符串
+     * @param array $inputs 要操作的数组
+     * @param array|string $keys 需要删除的key的数组，或者用（,）链接的字符串
      *
      * @return array
      */
     public static function removeKeys(array $inputs, $keys)
     {
-        if (!is_array($keys)) {// 如果不是数组，需要进行转换
+        if (! is_array($keys)) {// 如果不是数组，需要进行转换
             $keys = explode(',', $keys);
         }
 
-        if (empty($keys) || !is_array($keys)) {
+        if (empty($keys) || ! is_array($keys)) {
             return $inputs;
         }
 
@@ -58,19 +66,18 @@ class Arr
             }
         }
 
-        if (!$flag) {
+        if (! $flag) {
             $inputs = array_values($inputs);
         }
         return $inputs;
     }
 
     /**
-     * 对输入的数组进行字典排序
+     * 对输入的数组进行字典排序.
      *
      * @param array $param 需要排序的数组
      *
      * @return array
-     * @author Leo
      */
     public static function arraySort(array $param)
     {
@@ -81,16 +88,16 @@ class Arr
     }
 
     /**
-     * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+     * 把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串.
      *
      * @param array $para 需要拼接的数组
      *
-     * @return string
      * @throws \Exception
+     * @return string
      */
     public static function createLinkString($para)
     {
-        if (!is_array($para)) {
+        if (! is_array($para)) {
             throw new \Exception('必须传入数组参数');
         }
 
@@ -117,15 +124,14 @@ class Arr
     /**
      * 获取一个数组中某个key的值，如果key为不存在，返回默认值
      *
-     * @param array  $arr
-     * @param        $key
+     * @param $key
      * @param string $default
      *
      * @return string
      */
     public static function get(array $arr, $key, $default = '')
     {
-        if (isset($arr[$key]) && !empty($arr[$key])) {
+        if (isset($arr[$key]) && ! empty($arr[$key])) {
             return $arr[$key];
         }
 

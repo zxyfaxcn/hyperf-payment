@@ -1,5 +1,15 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Helper;
 
 class RsaEncrypt
@@ -12,11 +22,9 @@ class RsaEncrypt
     }
 
     /**
-     * 设置key
+     * 设置key.
      *
      * @param $key
-     *
-     * @author Leo
      */
     public function setKey($key)
     {
@@ -24,13 +32,12 @@ class RsaEncrypt
     }
 
     /**
-     * RSA签名, 此处秘钥是私有秘钥
+     * RSA签名, 此处秘钥是私有秘钥.
      *
      * @param string $data 签名的数组
      *
-     * @return string
      * @throws \Exception
-     * @author Leo
+     * @return string
      */
     public function encrypt($data)
     {
@@ -47,18 +54,16 @@ class RsaEncrypt
         openssl_free_key($res);
 
         //base64编码
-        $sign = base64_encode($sign);
-        return $sign;
+        return base64_encode($sign);
     }
 
     /**
-     * RSA解密 此处秘钥是用户私有秘钥
+     * RSA解密 此处秘钥是用户私有秘钥.
      *
      * @param string $content 需要解密的内容，密文
      *
-     * @return string
      * @throws \Exception
-     * @author Leo
+     * @return string
      */
     public function decrypt($content)
     {
@@ -75,7 +80,7 @@ class RsaEncrypt
         $content = base64_decode($content);
         //把需要解密的内容，按128位拆开解密
         $result = '';
-        for ($i = 0; $i < strlen($content) / 128; $i++) {
+        for ($i = 0; $i < strlen($content) / 128; ++$i) {
             $data = substr($content, $i * 128, 128);
             openssl_private_decrypt($data, $decrypt, $res);
             $result .= $decrypt;
@@ -85,14 +90,13 @@ class RsaEncrypt
     }
 
     /**
-     * RSA验签 ，此处的秘钥，是第三方公钥
+     * RSA验签 ，此处的秘钥，是第三方公钥.
      *
      * @param string $data 待签名数据
      * @param string $sign 要校对的的签名结果
      *
-     * @return bool
      * @throws \Exception
-     * @author Leo
+     * @return bool
      */
     public function rsaVerify($data, $sign)
     {
@@ -101,7 +105,7 @@ class RsaEncrypt
             throw new \InvalidArgumentException('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
         }
 
-        $result = (bool)openssl_verify($data, base64_decode($sign), $res, OPENSSL_ALGO_SHA1);
+        $result = (bool) openssl_verify($data, base64_decode($sign), $res, OPENSSL_ALGO_SHA1);
         openssl_free_key($res);
         return $result;
     }

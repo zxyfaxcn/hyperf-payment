@@ -1,5 +1,14 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
 
 namespace Hyperf\Payment\Helper;
 
@@ -13,11 +22,9 @@ class Rc4Encrypt
     }
 
     /**
-     * 设置key
+     * 设置key.
      *
      * @param $key
-     *
-     * @author Leo
      */
     public function setKey($key)
     {
@@ -25,41 +32,41 @@ class Rc4Encrypt
     }
 
     /**
-     * rc4加密算法
+     * rc4加密算法.
      *
      * @param $data
      *
-     * @return string
      * @throws \Exception
+     * @return string
      */
     public function encrypt($data)
     {
         $cipher = $box[] = $key[] = '';
 
-        $pwd_length  = strlen($this->key);
+        $pwd_length = strlen($this->key);
         $data_length = strlen($data);
 
-        for ($i = 0; $i < 256; $i++) {
+        for ($i = 0; $i < 256; ++$i) {
             $key[$i] = ord($this->key[$i % $pwd_length]);
             $box[$i] = $i;
         }
 
-        for ($j = $i = 0; $i < 256; $i++) {
-            $j       = ($j + $box[$i] + $key[$i]) % 256;
-            $tmp     = $box[$i];
+        for ($j = $i = 0; $i < 256; ++$i) {
+            $j = ($j + $box[$i] + $key[$i]) % 256;
+            $tmp = $box[$i];
             $box[$i] = $box[$j];
             $box[$j] = $tmp;
         }
 
-        for ($a = $j = $i = 0; $i < $data_length; $i++) {
+        for ($a = $j = $i = 0; $i < $data_length; ++$i) {
             $a = ($a + 1) % 256;
             $j = ($j + $box[$a]) % 256;
 
-            $tmp     = $box[$a];
+            $tmp = $box[$a];
             $box[$a] = $box[$j];
             $box[$j] = $tmp;
 
-            $k      = $box[(($box[$a] + $box[$j]) % 256)];
+            $k = $box[(($box[$a] + $box[$j]) % 256)];
             $cipher .= chr(ord($data[$i]) ^ $k);
         }
 

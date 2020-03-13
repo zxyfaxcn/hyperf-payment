@@ -1,5 +1,15 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Gateway\Wxpay;
 
 use Hyperf\Contract\ConfigInterface;
@@ -14,7 +24,8 @@ use Psr\Log\LoggerInterface;
 abstract class BaseWxPay
 {
     use HttpRequest;
-    const NONCE_LEN = 32;// 随机字符串长度
+
+    const NONCE_LEN = 32; // 随机字符串长度
 
     const REQ_SUC = 'SUCCESS';
 
@@ -25,22 +36,12 @@ abstract class BaseWxPay
     /**
      * @var string
      */
-    private $prefix;
-
-    /**
-     * @var string
-     */
     protected $gatewayUrl = '';
 
     /**
      * @var string
      */
     protected $merKey = '';
-
-    /**
-     * @var string
-     */
-    private $sandboxKey = '';
 
     /**
      * @var bool
@@ -63,16 +64,26 @@ abstract class BaseWxPay
     protected $useBackup = false;
 
     /**
-     * 设置加密方式
+     * 设置加密方式.
      * @var string
      */
     protected $signType = '';
 
     /**
-     * 请求方法的名称
+     * 请求方法的名称.
      * @var string
      */
     protected $methodName = '';
+
+    /**
+     * @var string
+     */
+    private $prefix;
+
+    /**
+     * @var string
+     */
+    private $sandboxKey = '';
 
     /**
      * @var ConfigInterface
@@ -90,45 +101,18 @@ abstract class BaseWxPay
         $this->logger = $logger;
     }
 
-    private function initialize()
-    {
-        $this->prefix    = 'payment.wx.options';
-        $this->isSandbox = $this->getConfig('use_sandbox', false);
-        $this->useBackup = $this->getConfig('use_backup', false);
-        $this->returnRaw = $this->getConfig('return_raw', false);
-        $this->merKey    = $this->getConfig('md5_key', '');
-        $this->signType  = $this->getConfig()->get('sign_type', '');
-        $this->nonceStr  = Str::getNonceStr(self::NONCE_LEN);
-
-        // 初始 微信网关地址
-        $this->gatewayUrl = 'https://api.mch.weixin.qq.com/%s';
-        if ($this->isSandbox) {
-            $this->gatewayUrl = 'https://api.mch.weixin.qq.com/sandboxnew/%s';
-        } elseif ($this->useBackup) {
-            $this->gatewayUrl = 'https://api2.mch.weixin.qq.com/%s'; // 灾备地址
-        }
-
-        // 如果是沙盒模式，更换密钥
-        if ($this->isSandbox && empty($this->sandboxKey)) {
-            $this->sandboxKey = $this->getSignKey();
-            //$this->sandboxKey = 'c15772692e55c8db69b40d1cb8e6f627';
-            $this->merKey = $this->sandboxKey;
-        }
-    }
-
     /**
-     * 检查微信返回的数据是否被篡改过
-     * @param array $retData
-     * @return boolean
+     * 检查微信返回的数据是否被篡改过.
      * @throws GatewayException
+     * @return bool
      */
     protected function verifySign(array $retData)
     {
         try {
             $retSign = $retData['sign'];
-            $values  = Arr::removeKeys($retData, ['sign', 'sign_type']);
-            $values  = Arr::paraFilter($values);
-            $values  = Arr::arraySort($values);
+            $values = Arr::removeKeys($retData, ['sign', 'sign_type']);
+            $values = Arr::paraFilter($values);
+            $values = Arr::arraySort($values);
             $signStr = Arr::createLinkstring($values);
         } catch (\Exception $e) {
             throw new GatewayException('wechat verify sign generate str get error', Payment::SIGN_ERR);
@@ -148,23 +132,22 @@ abstract class BaseWxPay
         return strtoupper($sign) === $retSign;
     }
 
-
     /**
-     * 获取证书参数
+     * 获取证书参数.
      * @return array
      */
     protected function getCertOptions()
     {
         ! defined('BASE_PATH') && define('BASE_PATH', dirname(__DIR__, 1));
         return [
-            'cert'    => $this->getConfig('app_cert_pem', ''),
+            'cert' => $this->getConfig('app_cert_pem', ''),
             'ssl_key' => $this->getConfig('app_key_pem', ''),
-            'verify'  => BASE_PATH . DIRECTORY_SEPARATOR . 'cert' . DIRECTORY_SEPARATOR . 'wx_cacert.pem',
+            'verify' => BASE_PATH . DIRECTORY_SEPARATOR . 'cert' . DIRECTORY_SEPARATOR . 'wx_cacert.pem',
         ];
     }
 
     /**
-     * 获取签名
+     * 获取签名.
      * @return mixed
      */
     protected function getSignKey()
@@ -178,22 +161,22 @@ abstract class BaseWxPay
             throw $e;
         }
     }
+
     /**
-     * 获取微信的错误信息
+     * 获取微信的错误信息.
      * @param mixed $resArr
      * @return string
      */
     protected function getErrorMsg($resArr)
     {
-        if (!is_array($resArr)) {
+        if (! is_array($resArr)) {
             return 'not array';
         }
         return isset($resArr['retmsg']) ? $resArr['retmsg'] : (isset($resArr['return_msg']) ? $resArr['return_msg'] : 'error');
     }
+
     /**
-     * 请求微信支付的api
-     * @param string $method
-     * @param array  $requestParams
+     * 请求微信支付的api.
      *
      * @return array|false|mixed|string
      */
@@ -202,7 +185,7 @@ abstract class BaseWxPay
         $this->methodName = $method;
         try {
             $xmlData = $this->buildParams($requestParams);
-            $url     = sprintf($this->gatewayUrl, $method);
+            $url = sprintf($this->gatewayUrl, $method);
 
             $this->setOptions($this->getCertOptions());
             $resXml = $this->postXML($url, $xmlData);
@@ -211,9 +194,10 @@ abstract class BaseWxPay
             }
 
             $resArr = DataParser::toArray($resXml);
-            if (!is_array($resArr) || $resArr['return_code'] !== self::REQ_SUC) {
+            if (! is_array($resArr) || $resArr['return_code'] !== self::REQ_SUC) {
                 throw new GatewayException($this->getErrorMsg($resArr), Payment::GATEWAY_REFUSE, $resArr);
-            } elseif (isset($resArr['result_code']) && $resArr['result_code'] !== self::REQ_SUC) {
+            }
+            if (isset($resArr['result_code']) && $resArr['result_code'] !== self::REQ_SUC) {
                 throw new GatewayException(sprintf('code:%d, desc:%s', $resArr['err_code'], $resArr['err_code_des']), Payment::GATEWAY_CHECK_FAILED, $resArr);
             }
 
@@ -228,27 +212,26 @@ abstract class BaseWxPay
     }
 
     /**
-     * 生成请求参数
-     * @param array $requestParams
-     * @return string
+     * 生成请求参数.
      * @throws GatewayException
+     * @return string
      */
     protected function buildParams(array $requestParams = [])
     {
         $params = [
-            'appid'      => $this->getConfig('app_id', ''),
-            'sub_appid'  => $this->getConfig('sub_appid', ''),
-            'mch_id'     => $this->getConfig('mch_id', ''),
+            'appid' => $this->getConfig('app_id', ''),
+            'sub_appid' => $this->getConfig('sub_appid', ''),
+            'mch_id' => $this->getConfig('mch_id', ''),
             'sub_mch_id' => $this->getConfig('sub_mch_id', ''),
-            'nonce_str'  => $this->nonceStr,
-            'sign_type'  => $this->signType,
+            'nonce_str' => $this->nonceStr,
+            'sign_type' => $this->signType,
         ];
         $params = $this->changeKeyName($params);
 
-        if (!empty($requestParams)) {
+        if (! empty($requestParams)) {
             $selfParams = $this->getSelfParams($requestParams);
 
-            if (is_array($selfParams) && !empty($selfParams)) {
+            if (is_array($selfParams) && ! empty($selfParams)) {
                 $params = array_merge($params, $selfParams);
             }
         }
@@ -257,7 +240,7 @@ abstract class BaseWxPay
         $params = Arr::arraySort($params);
 
         try {
-            $signStr        = Arr::createLinkstring($params);
+            $signStr = Arr::createLinkstring($params);
             $params['sign'] = $this->makeSign($signStr);
         } catch (\Exception $e) {
             throw new GatewayException($e->getMessage(), Payment::PARAMS_ERR);
@@ -272,10 +255,9 @@ abstract class BaseWxPay
     }
 
     /**
-     * 签名算法实现  便于后期扩展微信不同的加密方式
-     * @param string $signStr
-     * @return string
+     * 签名算法实现  便于后期扩展微信不同的加密方式.
      * @throws GatewayException
+     * @return string
      */
     protected function makeSign(string $signStr)
     {
@@ -299,10 +281,8 @@ abstract class BaseWxPay
         return strtoupper($sign);
     }
 
-
     /**
-     * 修改关键key的名字
-     * @param array $params
+     * 修改关键key的名字.
      * @return array
      */
     protected function changeKeyName(array $params)
@@ -312,13 +292,13 @@ abstract class BaseWxPay
             'mmpaymkttransfers/sendredpack',
         ];
 
-        if (!in_array($this->methodName, $changeMap)) {
+        if (! in_array($this->methodName, $changeMap)) {
             return $params;
         }
 
         if ($this->methodName === 'mmpaymkttransfers/promotion/transfers') {
             $params['mch_appid'] = $params['appid'];
-            $params['mchid']     = $params['mch_id'];
+            $params['mchid'] = $params['mch_id'];
             unset($params['appid']);
         } elseif ($this->methodName === 'mmpaymkttransfers/sendredpack') {
             unset($params['appid']);
@@ -328,27 +308,49 @@ abstract class BaseWxPay
         return $params;
     }
 
-    /**
-     * @param string $gatewayUrl
-     */
     protected function setGatewayUrl(string $gatewayUrl)
     {
         $this->gatewayUrl = $gatewayUrl;
     }
+
     /**
-     * @param array $requestParams
      * @return mixed
      */
     abstract protected function getSelfParams(array $requestParams);
 
     /**
-     * @param string $key
-     * @param        $default
+     * @param $default
      *
      * @return mixed
      */
     protected function getConfig(string $key, $default)
     {
         return $this->config->get($this->prefix . $key, $default);
+    }
+
+    private function initialize()
+    {
+        $this->prefix = 'payment.wx.options';
+        $this->isSandbox = $this->getConfig('use_sandbox', false);
+        $this->useBackup = $this->getConfig('use_backup', false);
+        $this->returnRaw = $this->getConfig('return_raw', false);
+        $this->merKey = $this->getConfig('md5_key', '');
+        $this->signType = $this->getConfig()->get('sign_type', '');
+        $this->nonceStr = Str::getNonceStr(self::NONCE_LEN);
+
+        // 初始 微信网关地址
+        $this->gatewayUrl = 'https://api.mch.weixin.qq.com/%s';
+        if ($this->isSandbox) {
+            $this->gatewayUrl = 'https://api.mch.weixin.qq.com/sandboxnew/%s';
+        } elseif ($this->useBackup) {
+            $this->gatewayUrl = 'https://api2.mch.weixin.qq.com/%s'; // 灾备地址
+        }
+
+        // 如果是沙盒模式，更换密钥
+        if ($this->isSandbox && empty($this->sandboxKey)) {
+            $this->sandboxKey = $this->getSignKey();
+            //$this->sandboxKey = 'c15772692e55c8db69b40d1cb8e6f627';
+            $this->merKey = $this->sandboxKey;
+        }
     }
 }

@@ -1,26 +1,36 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Helper;
 
 class Str
 {
     /**
-     * 产生随机字符串，不长于32位
+     * 产生随机字符串，不长于32位.
      * @param int $length
      * @return string 产生的随机字符串
      */
     public static function getNonceStr($length = 32)
     {
         $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        $str   = '';
-        for ($i = 0; $i < $length; $i++) {
+        $str = '';
+        for ($i = 0; $i < $length; ++$i) {
             $str .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
         }
         return $str;
     }
 
     /**
-     * 转码字符集转码  仅支持 转码 到 UTF-8
+     * 转码字符集转码  仅支持 转码 到 UTF-8.
      * @param string $str
      * @param string $targetCharset
      * @return mixed|string
@@ -39,7 +49,7 @@ class Str
     }
 
     /**
-     * 转成16进制
+     * 转成16进制.
      * @param string $string
      * @return string
      */
@@ -47,14 +57,14 @@ class Str
     {
         $hex = '';
         $len = strlen($string);
-        for ($i = 0; $i < $len; $i++) {
+        for ($i = 0; $i < $len; ++$i) {
             $hex .= dechex(ord($string[$i]));
         }
         return $hex;
     }
 
     /**
-     * 获取rsa密钥内容
+     * 获取rsa密钥内容.
      * @param string $key 传入的密钥信息， 可能是文件或者字符串
      * @param string $type
      *
@@ -75,10 +85,10 @@ class Str
         // 为了解决用户传入的密钥格式，这里进行统一处理
         if ($type === 'private') {
             $beginStr = '-----BEGIN RSA PRIVATE KEY-----' . PHP_EOL;
-            $endStr   = PHP_EOL . '-----END RSA PRIVATE KEY-----';
+            $endStr = PHP_EOL . '-----END RSA PRIVATE KEY-----';
         } else {
             $beginStr = '-----BEGIN PUBLIC KEY-----' . PHP_EOL;
-            $endStr   = PHP_EOL . '-----END PUBLIC KEY-----';
+            $endStr = PHP_EOL . '-----END PUBLIC KEY-----';
         }
 
         return $beginStr . wordwrap($keyStr, 64, "\n", true) . $endStr;

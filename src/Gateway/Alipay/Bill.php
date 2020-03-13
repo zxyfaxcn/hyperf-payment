@@ -1,5 +1,15 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\Payment\Contract\GatewayInterface;
@@ -9,33 +19,17 @@ use Hyperf\Payment\Payment;
 
 /**
  * 为方便商户快速查账，支持商户通过本接口获取商户离线账单下载地址
- * Class Bill
- * @package Hyperf\Payment\Gateway\Alipay
+ * Class Bill.
  */
 class Bill extends BaseAlipay implements GatewayInterface
 {
-
     const METHOD = 'alipay.data.dataservice.bill.downloadurl.query';
-
-    /**
-     * @inheritDoc
-     */
-    protected function getBizContent(array $requestParams)
-    {
-        $bizContent = [
-            'bill_type' => $requestParams['bill_type'] ?? 'trade',
-            'bill_date' => $requestParams['bill_date'] ?? '', // 日账单格式为yyyy-MM-dd
-        ];
-        $bizContent = Arr::paraFilter($bizContent);
-
-        return $bizContent;
-    }
 
     public function request(array $options)
     {
         try {
             $params = $this->buildParams(self::METHOD, $options);
-            $ret    = $this->get($this->gatewayUrl, $params);
+            $ret = $this->get($this->gatewayUrl, $params);
             $retArr = json_decode($ret, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new GatewayException(sprintf('format bill data get error, [%s]', json_last_error_msg()), Payment::FORMAT_DATA_ERR, ['raw' => $ret]);
@@ -47,7 +41,7 @@ class Bill extends BaseAlipay implements GatewayInterface
             }
 
             $signFlag = $this->verifySign($content, $retArr['sign']);
-            if (!$signFlag) {
+            if (! $signFlag) {
                 throw new GatewayException('check sign failed', Payment::SIGN_ERR, $retArr);
             }
 
@@ -55,5 +49,17 @@ class Bill extends BaseAlipay implements GatewayInterface
         } catch (GatewayException $e) {
             throw $e;
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getBizContent(array $requestParams)
+    {
+        $bizContent = [
+            'bill_type' => $requestParams['bill_type'] ?? 'trade',
+            'bill_date' => $requestParams['bill_date'] ?? '', // 日账单格式为yyyy-MM-dd
+        ];
+        return Arr::paraFilter($bizContent);
     }
 }

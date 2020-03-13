@@ -1,22 +1,30 @@
 <?php
+
 declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
 
 namespace Hyperf\Payment\Helpers;
 
 /**
- * Class DataParser
- * @package Hyperf\Payment\Helpers
+ * Class DataParser.
  */
 class DataParser
 {
     /**
-     * 输出xml字符
+     * 输出xml字符.
      * @param array $values
-     * @return string|bool
-     **/
+     * @return bool|string
+     */
     public static function toXml($values)
     {
-        if (!is_array($values) || count($values) <= 0) {
+        if (! is_array($values) || count($values) <= 0) {
             return false;
         }
 
@@ -33,19 +41,19 @@ class DataParser
     }
 
     /**
-     * 将xml转为array
+     * 将xml转为array.
      * @param string $xml
      * @return array|false
      */
     public static function toArray($xml)
     {
-        if (!$xml) {
+        if (! $xml) {
             return false;
         }
 
         // 检查xml是否合法
         $xml_parser = xml_parser_create();
-        if (!xml_parse($xml_parser, $xml, true)) {
+        if (! xml_parse($xml_parser, $xml, true)) {
             xml_parser_free($xml_parser);
             return false;
         }

@@ -1,15 +1,26 @@
 <?php
-declare(strict_types =1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Adapter;
+
 use Hyperf\Payment\Contract\GatewayInterface;
 use Hyperf\Payment\Contract\PayInterface;
 use Hyperf\Payment\Contract\PayNotifyInterface;
 use Hyperf\Payment\Contract\QueryInterface;
 
-class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,QueryInterface{
-
+class WxpayFactory implements GatewayInterface, PayInterface, PayNotifyInterface, QueryInterface
+{
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function request(array $options)
     {
@@ -17,7 +28,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function pay(string $channel, array $options)
     {
@@ -25,7 +36,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function refund(array $options)
     {
@@ -33,7 +44,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function notify(PayNotifyInterface $callback)
     {
@@ -41,7 +52,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function cancel(array $options)
     {
@@ -49,7 +60,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function close(array $options)
     {
@@ -57,7 +68,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function handle(string $channel, string $notifyType, string $notifyWay, array $notifyData)
     {
@@ -65,7 +76,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function tradeQuery(array $options)
     {
@@ -73,7 +84,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function refundQuery(array $options)
     {
@@ -81,7 +92,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function transferQuery(array $options)
     {
@@ -89,7 +100,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function billDownload(array $options)
     {
@@ -97,7 +108,7 @@ class WxpayFactory implements GatewayInterface,PayInterface,PayNotifyInterface,Q
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function settleDownload(array $options)
     {

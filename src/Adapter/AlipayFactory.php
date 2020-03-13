@@ -1,5 +1,15 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Adapter;
 
 use Hyperf\Payment\Contract\GatewayInterface;
@@ -21,18 +31,18 @@ class AlipayFactory implements PayInterface, QueryInterface
 {
     /**
      * 支付操作
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function pay(string $channel, array $options)
     {
         $class = $this->getChargeClass($channel);
-        if (!class_exists($class)) {
+        if (! class_exists($class)) {
             throw new InvalidArgumentException(sprintf('Gateway [%s] not exists.', $class), Payment::CLASS_NOT_EXIST);
         }
 
         try {
             /**
-             * @var GatewayInterface $charge
+             * @var GatewayInterface
              */
             $charge = make($class);
             return $charge->request($options);
@@ -43,7 +53,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 退款操作
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function refund(array $options)
     {
@@ -57,12 +67,12 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 同步异步通知
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function notify(PayNotifyInterface $callback)
     {
         try {
-            $n    = new Notify();
+            $n = new Notify();
             $data = $n->request(); // 获取数据
         } catch (GatewayException $e) {
             throw $e;
@@ -76,7 +86,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 取消交易
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function cancel(array $options)
     {
@@ -90,7 +100,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 关闭交易
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function close(array $options)
     {
@@ -102,10 +112,9 @@ class AlipayFactory implements PayInterface, QueryInterface
         }
     }
 
-
     /**
      * 交易查询
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function tradeQuery(array $options)
     {
@@ -118,7 +127,7 @@ class AlipayFactory implements PayInterface, QueryInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function refundQuery(array $options)
     {
@@ -132,7 +141,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 转账查询
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function transferQuery(array $options)
     {
@@ -146,7 +155,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 账单查询
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function billDownload(array $options)
     {
@@ -160,7 +169,7 @@ class AlipayFactory implements PayInterface, QueryInterface
 
     /**
      * 打款结算查询
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function settleDownload(array $options)
     {
@@ -168,7 +177,7 @@ class AlipayFactory implements PayInterface, QueryInterface
     }
 
     /**
-     * 获取支付类
+     * 获取支付类.
      *
      * @param string $channel
      *
@@ -179,5 +188,4 @@ class AlipayFactory implements PayInterface, QueryInterface
         $name = ucfirst(str_replace(['-', '_', ''], '', $channel));
         return "Hyperf\\Payment\\Gateways\\Alipay\\{$name}Charge";
     }
-
 }

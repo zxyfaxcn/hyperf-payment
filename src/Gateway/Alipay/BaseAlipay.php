@@ -1,12 +1,22 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+/**
+ * This file is part of Hyperf.
+ *
+ * @link     https://www.hyperf.io
+ * @document https://doc.hyperf.io
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+ */
+
 namespace Hyperf\Payment\Gateway\Alipay;
 
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Payment\Exception\GatewayException;
-use Hyperf\Payment\Helper\Str;
-use Hyperf\Payment\Helper\RsaEncrypt;
 use Hyperf\Payment\Helper\Rsa2Encrypt;
+use Hyperf\Payment\Helper\RsaEncrypt;
+use Hyperf\Payment\Helper\Str;
 use Hyperf\Payment\Helpers\Arr;
 use Hyperf\Payment\HttpRequest;
 use Hyperf\Payment\Payment;
@@ -66,41 +76,12 @@ abstract class BaseAlipay
         $this->initialize();
     }
 
-    private function initialize()
-    {
-        $this->prefix    = 'payment.ali.options';
-        $this->isSandbox = $this->getConfig('use_sandbox', false);
-        $this->returnRaw = $this->getConfig('return_raw', false);
-
-        $rsaPublicKey = $this->getConfig('ali_public_key', '');
-        if ($rsaPublicKey) {
-            $this->publicKey = $rsaPublicKey;
-        }
-        if (empty($this->publicKey)) {
-            throw new GatewayException('please set ali public key', Payment::PARAMS_ERR);
-        }
-
-        $rsaPrivateKey = $this->getConfig('rsa_private_key', '');
-        if ($rsaPrivateKey) {
-            $this->privateKey = Str::getRsaKeyValue($rsaPrivateKey, 'private');
-        }
-
-        if (empty($this->privateKey)) {
-            throw new GatewayException('please set ali private key', Payment::PARAMS_ERR);
-        }
-
-        // 初始 支付宝网关地址
-        $this->gatewayUrl = 'https://openapi.alipay.com/gateway.do';
-        if ($this->isSandbox) {
-            $this->gatewayUrl = 'https://openapi.alipaydev.com/gateway.do';
-        }
-    }
-
     /**
      * @param string $signType
      * @param string $signStr
      *
      * @return string
+     * @throws \Hyperf\Payment\Exception\GatewayException
      */
     protected function makeSign(string $signType, string $signStr)
     {
@@ -134,18 +115,19 @@ abstract class BaseAlipay
      * @param string $sign
      *
      * @return bool
-     * @throws GatewayException
+     * @throws \Hyperf\Payment\Exception\GatewayException
      */
     protected function verifySign(array $data, string $sign)
     {
         $signType = strtoupper($this->getConfig('sign_type', ''));
-        $preStr   = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $preStr = json_encode($data, JSON_UNESCAPED_UNICODE);
 
         try {
             if ($signType === 'RSA') {// 使用RSA
                 $rsa = new RsaEncrypt($this->publicKey);
                 return $rsa->rsaVerify($preStr, $sign);
-            } elseif ($signType === 'RSA2') {// 使用rsa2方式
+            }
+            if ($signType === 'RSA2') {// 使用rsa2方式
                 $rsa = new Rsa2Encrypt($this->publicKey);
                 return $rsa->rsaVerify($preStr, $sign);
             }
@@ -156,14 +138,14 @@ abstract class BaseAlipay
     }
 
     /**
-     * 针对异步通知的验证签名
+     * 针对异步通知的验证签名.
      *
      * @param array  $data
      * @param string $sign
      * @param string $signType
      *
      * @return bool
-     * @throws GatewayException
+     * @throws \Hyperf\Payment\Exception\GatewayException
      */
     protected function verifySignForASync(array $data, string $sign, string $signType)
     {
@@ -175,7 +157,8 @@ abstract class BaseAlipay
             if ($signType === 'RSA') {// 使用RSA
                 $rsa = new RsaEncrypt($this->publicKey);
                 return $rsa->rsaVerify($preStr, $sign);
-            } elseif ($signType === 'RSA2') {// 使用rsa2方式
+            }
+            if ($signType === 'RSA2') {// 使用rsa2方式
                 $rsa = new Rsa2Encrypt($this->publicKey);
                 return $rsa->rsaVerify($preStr, $sign);
             }
@@ -190,12 +173,12 @@ abstract class BaseAlipay
      * @param array  $requestParams
      *
      * @return array
-     * @throws GatewayException
+     * @throws \Hyperf\Payment\Exception\GatewayException
      */
     protected function buildParams(string $method, array $requestParams)
     {
         $bizContent = $this->getBizContent($requestParams);
-        $params     = $this->getBaseData($method, $bizContent);
+        $params = $this->getBaseData($method, $bizContent);
 
         // 支付宝新版本  需要转码
         foreach ($params as &$value) {
@@ -206,7 +189,7 @@ abstract class BaseAlipay
         try {
             $signStr = Arr::createLinkString($params);
 
-            $signType       = $this->getConfig('sign_type', '');
+            $signType = $this->getConfig('sign_type', '');
             $params['sign'] = $this->makeSign($signType, $signStr);
         } catch (GatewayException $e) {
             throw $e;
@@ -218,7 +201,44 @@ abstract class BaseAlipay
     }
 
     /**
-     * 获取基础数据
+     * @param array $requestParams
+     *
+     * @return mixed
+     */
+    abstract protected function getBizContent(array $requestParams);
+
+    private function initialize()
+    {
+        $this->prefix = 'payment.ali.options';
+        $this->isSandbox = $this->getConfig('use_sandbox', false);
+        $this->returnRaw = $this->getConfig('return_raw', false);
+
+        $rsaPublicKey = $this->getConfig('ali_public_key', '');
+        if ($rsaPublicKey) {
+            $this->publicKey = $rsaPublicKey;
+        }
+        if (empty($this->publicKey)) {
+            throw new GatewayException('please set ali public key', Payment::PARAMS_ERR);
+        }
+
+        $rsaPrivateKey = $this->getConfig('rsa_private_key', '');
+        if ($rsaPrivateKey) {
+            $this->privateKey = Str::getRsaKeyValue($rsaPrivateKey, 'private');
+        }
+
+        if (empty($this->privateKey)) {
+            throw new GatewayException('please set ali private key', Payment::PARAMS_ERR);
+        }
+
+        // 初始 支付宝网关地址
+        $this->gatewayUrl = 'https://openapi.alipay.com/gateway.do';
+        if ($this->isSandbox) {
+            $this->gatewayUrl = 'https://openapi.alipaydev.com/gateway.do';
+        }
+    }
+
+    /**
+     * 获取基础数据.
      *
      * @param string $method
      * @param array  $bizContent
@@ -228,29 +248,22 @@ abstract class BaseAlipay
     private function getBaseData(string $method, array $bizContent)
     {
         $requestData = [
-            'app_id'      => $this->getConfig('app_id', ''),
-            'method'      => $method,
-            'format'      => 'JSON',
-            'return_url'  => $this->getConfig('return_url', ''),
-            'charset'     => 'utf-8',
-            'sign_type'   => $this->getConfig('sign_type', ''),
-            'timestamp'   => date('Y-m-d H:i:s'),
-            'version'     => '1.0',
-            'notify_url'  => $this->getConfig('notify_url', ''),
+            'app_id' => $this->getConfig('app_id', ''),
+            'method' => $method,
+            'format' => 'JSON',
+            'return_url' => $this->getConfig('return_url', ''),
+            'charset' => 'utf-8',
+            'sign_type' => $this->getConfig('sign_type', ''),
+            'timestamp' => date('Y-m-d H:i:s'),
+            'version' => '1.0',
+            'notify_url' => $this->getConfig('notify_url', ''),
             // 'app_auth_token' => '', // 暂时不用
             'biz_content' => json_encode($bizContent, JSON_UNESCAPED_UNICODE),
         ];
         return ArrayUtil::arraySort($requestData);
     }
 
-    /**
-     * @param array $requestParams
-     *
-     * @return mixed
-     */
-    abstract protected function getBizContent(array $requestParams);
-
-    private function getConfig(string $key, $default)
+    protected function getConfig(string $key, $default)
     {
         return $this->config->get($this->prefix . $key, $default);
     }
