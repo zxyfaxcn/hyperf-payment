@@ -33,7 +33,6 @@
     "hyperf/logger": "^1.1"
   },
   "require-dev": {
-    "codeception/codeception": "*",
     "hyperf/testing": "1.1.*",
     "swoole/ide-helper": "4.4.*"
   },
